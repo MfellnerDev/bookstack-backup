@@ -1,6 +1,8 @@
 class Book:
     """
-    The Book class - just a little class to make the attribute handling easier - which it does, by a lot
+    @author MfellnerDev | Manuel Fellner
+    @version 16.06.2023
+    The Book class - just a little class to make the attribute handling easier - which it does, by a lot.
     """
     def __init__(self, parent_book: str, page_id, page_slug: str, filename):
         self.parent_book = parent_book
