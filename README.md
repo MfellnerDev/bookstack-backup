@@ -63,3 +63,20 @@ For example:
 `Successfully exported & stored file "C:\Users\User\Coding\PyCharm\BookStack\Backup\exports\markdown\hetzner-dedi-documentation-services\mastodon-social-networking-alternative.md".`
 
 If you get error messages, check the `.env` file. If that doesn't help, feel free to open an issue.
+
+### 6. What's next?
+
+This script was just written for personal use, but I could imagine myself implementing the following extras in the future:
+  
+  - Possibility to back up the "complete" structure: shelves, books, chapters, and pages
+
+   
+  - Backup of attachments, images, etc.
+   
+   
+  - Backup of BookStack configuration
+   
+  
+  - Maybe a more beautiful wrapper for the script? Idk, maybe an GUI?
+   
+  - Who knows...
