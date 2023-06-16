@@ -21,7 +21,8 @@ If you want to back up your BookStackbookss, you'll need the following things:
   1. A running BookStack application (of course).
   2. A BookStack Token ID and Token Secret for your Account -> [Bookstack public API docs](https://demo.bookstackapp.com/api/docs)
   3. Python 3.9 installed (it was developed & tested with only Python 3.9)
-  4. Enough space :)
+  4. Of course, you also need to download all used libs.
+  5. Enough space :)
  
 That's it!
 
