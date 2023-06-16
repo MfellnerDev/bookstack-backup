@@ -1,8 +1,13 @@
-import requests
 from requests.exceptions import HTTPError
-import os
 from dotenv import load_dotenv
+import requests
+import os
 import random
+
+"""
+@author MfellnerDev | Manuel Fellner
+@version 16.06.2023
+"""
 
 # Load all environment vars from .env
 load_dotenv()
@@ -85,6 +90,10 @@ def _check_slug(slug: str):
 
 
 def _get_and_store_all_page_infos_in_file():
+    """
+    Combine all elements and store the information about all pages
+    :return:
+    """
     # Get the pages information from the API (as json but can be treated like dictionary)
     page_dict = _get_page_list_json()
 
@@ -102,8 +111,9 @@ def _get_and_store_all_page_infos_in_file():
         for specific_element in element_list:
             page_id = str(specific_element['id'])
             page_slug = _check_slug(str(specific_element['slug']))
+            page_parent_book = str(specific_element['book_slug'])
             # store ID and SLUG of the page in the format "id:slug"\n in the INFO textfile
-            content = f"{page_id}:{page_slug}"
+            content = f"{page_id}:{page_slug}:{page_parent_book}"
             _append_str_to_file(INFO_FILE, content)
 
 

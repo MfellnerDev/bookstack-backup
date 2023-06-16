@@ -1,8 +1,16 @@
-import requests
+import sys
+
 from requests.exceptions import HTTPError
 from pathlib import Path
-import os
 from dotenv import load_dotenv
+import requests
+from book import Book
+import os
+
+"""
+@author MfellnerDev | Manuel Fellner
+@version 16.06.2023
+"""
 
 # Load all environment vars from .env
 load_dotenv()
@@ -29,8 +37,6 @@ INFO_FILE = os.getenv('INFO_FILE')
 session = requests.Session()
 session.headers.update(AUTH_HEADER)
 
-element_dict = {}
-
 
 def _remove_substring_out_of_string(string: str, substring: str):
     """
@@ -40,27 +46,6 @@ def _remove_substring_out_of_string(string: str, substring: str):
     :return: string without substring
     """
     return string.replace(substring, '')
-
-
-def _read_file_and_store_info_in_dict():
-    """
-    Read the INFO_FILE and store it in a dictionary
-    -> see INFO_FILE environment variable
-    :return:
-    """
-    page_info_dict = {}
-    with open(INFO_FILE, 'r', encoding='utf-8') as info_file:
-        # go through all lines
-        for current_line in info_file:
-            # Split the information, format: [page_id]:[page_slug]
-            page_info = current_line.split(':')
-            # Store the id
-            page_id = page_info[0]
-            # Store the slug but remove the "\n" sign
-            page_slug = _remove_substring_out_of_string(page_info[1], '\n')
-            # store the values in the dictionary
-            page_info_dict[page_id] = page_slug
-    return page_info_dict
 
 
 def _get_export_file_extension():
@@ -76,38 +61,86 @@ def _get_export_file_extension():
         return 'txt'
 
 
-def _build_correct_export_path():
+def _create_necessary_folders_windows(parent_book_slug_slug):
     """
-    Build the correct path/Filename from the given information.
-    export files are ALWAYS stored in [current_directory]/exports/[export_type]
+    Creates the needed folders for exporting all pages on Windows OS
+    :param parent_book_slug_slug:
+    :return:
+    """
+    current_directory = os.getcwd()
+
+    if not os.path.exists(f'{current_directory}\\exports\\{EXPORT_TYPE}'):
+        os.makedirs(f'{current_directory}\\exports\\{EXPORT_TYPE}')
+
+    if not os.path.exists(f'{current_directory}\\exports\\{EXPORT_TYPE}\\{parent_book_slug_slug}'):
+        os.makedirs(f'{current_directory}\\exports\\{EXPORT_TYPE}\\{parent_book_slug_slug}')
+
+
+def _create_necessary_folders_linux(parent_book_slug_slug):
+    """
+    Creates the needed folders for exporting all pages on Linux OS
+    :param parent_book_slug_slug:
+    :return:
+    """
+    current_directory = os.getcwd()
+
+    if not os.path.exists(f'{current_directory}/exports/{EXPORT_TYPE}'):
+        os.makedirs(f'{current_directory}/exports/{EXPORT_TYPE}')
+
+    if not os.path.exists(f'{current_directory}/exports/{EXPORT_TYPE}/{parent_book_slug_slug}'):
+        os.makedirs(f'{current_directory}/exports/{EXPORT_TYPE}/{parent_book_slug_slug}')
+
+
+def _build_correct_export_path(parent_book_slug_slug, page_id, page_slug):
+    """
+    Create the correct folders for the export and build the correct filename for an individual page
     :return:
     """
 
     current_directory = os.getcwd()
 
-    # if the /exports folder doesn't exist -> create it
-    if not os.path.exists(f'{current_directory}\exports\{EXPORT_TYPE}'):
-        os.makedirs(f'{current_directory}\exports\{EXPORT_TYPE}')
+    # Check which OS the host is running -> for creating the correct folders
+    if sys.platform.startswith('win'):
+        _create_necessary_folders_windows(parent_book_slug_slug)
+    elif sys.platform.startswith('linux'):
+        _create_necessary_folders_linux(parent_book_slug_slug)
 
     # Build the complete export path with the current directory and exports/export_type
     export_directory_path = os.path.join(current_directory, 'exports', EXPORT_TYPE)
-    print(f'All the exported {EXPORT_TYPE}-files will be stored in "{export_directory_path}".')
 
-    # get the entire page info and store it in dictionary
-    page_info_dict = _read_file_and_store_info_in_dict()
-
-    full_filename_list = []
+    # Get the current file extension from the EXPORT_TYPE variable
     file_extension = _get_export_file_extension()
+    # build the file_name with [page_slug].[file_extension]
+    file_name = f'{page_slug}.{file_extension}'
+    # Return the path of the individual page, formatted in: [current_directory]/[parent_book_slug_slug]/[filename]
+    return os.path.join(export_directory_path, parent_book_slug_slug, file_name)
 
-    if page_info_dict:
-        for page_id in page_info_dict.keys():
-            # build the file_name with [page_slug].[file_extension]
-            file_name = f'{page_info_dict[page_id]}.{file_extension}'
-            # Get the individual file path of every file
-            file_path = os.path.join(export_directory_path, file_name)
-            # store the individual file path of every file in the list
-            full_filename_list.append(Path(file_path))
-    return full_filename_list
+
+def _read_file_and_store_info_in_list():
+    """
+    Read the INFO_FILE, convert all information into Book objects and put these objects into an object-list.
+    Easy attribute-handling, hehe
+    :return:
+    """
+    book_list = []
+    with open(INFO_FILE, 'r', encoding='utf-8') as info_file:
+        # go through all lines
+        for current_line in info_file:
+            # Split the information, format: [page_id]:[page_slug]:[parent_book_slug_slug]
+            page_info = current_line.split(':')
+            # Store the id
+            page_id = page_info[0]
+            # Store the slug but remove the "\n" sign
+            page_slug = _remove_substring_out_of_string(page_info[1], '\n')
+            # Store the slug of the parent book of the entry
+            parent_book_slug = _remove_substring_out_of_string(page_info[2], '\n')
+
+            # build the path, where the page should be stored - filename
+            filename = _build_correct_export_path(parent_book_slug, page_id, page_slug)
+
+            # store the values in the object list
+            book_list.append(Book(parent_book_slug, page_id, page_slug, filename))
+    return book_list
 
 
 def _export_and_store_pages():
@@ -115,18 +148,17 @@ def _export_and_store_pages():
     Export all the pages via BookStack API /api/pages/{page_id}/export/{filetype}
     :return:
     """
-    page_info_dict = _read_file_and_store_info_in_dict()
-    full_filename_list = _build_correct_export_path()
+    book_list = _read_file_and_store_info_in_list()
 
-    for page_id, filename in zip(page_info_dict.keys(), full_filename_list):
+    for book in book_list:
         try:
             # try to download the exported page file in the expected format
-            exported_page = session.get(f'{BOOKSTACK_URL}/api/pages/{page_id}/export/{EXPORT_TYPE}')
-
+            exported_page = session.get(f'{BOOKSTACK_URL}/api/pages/{book.page_id}/export/{EXPORT_TYPE}')
+            filename_object = Path(book.filename)
             # write the page.content (so bytecode) in the real file
-            filename.write_bytes(exported_page.content)
+            filename_object.write_bytes(exported_page.content)
 
-            print(f'Successfully exported & stored file "{filename}".')
+            print(f'Successfully exported & stored file "{book.filename}".')
         except HTTPError as http_err:
             print(f'Oh, no! An HTTP Error occurred! Error: {http_err}')
         except Exception as err:
