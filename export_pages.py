@@ -3,6 +3,7 @@ import sys
 from requests.exceptions import HTTPError
 from pathlib import Path
 from dotenv import load_dotenv
+from gather_pages_information import get_and_store_all_page_infos_in_file
 import requests
 from book import Book
 import os
@@ -17,8 +18,6 @@ load_dotenv()
 
 # URL to your BookStack instance
 BOOKSTACK_URL = os.getenv('BOOKSTACK_URL')
-
-print(f"The URL of your BookStack instance is \"{BOOKSTACK_URL}\". ")
 
 # Token information of Admin user
 TOKEN_ID = os.getenv('TOKEN_ID')
@@ -143,7 +142,7 @@ def _read_file_and_store_info_in_list():
     return book_list
 
 
-def _export_and_store_pages():
+def export_and_store_pages():
     """
     Export all the pages via BookStack API /api/pages/{page_id}/export/{filetype}
     :return:
@@ -165,4 +164,5 @@ def _export_and_store_pages():
             print(f'Oh, no! An Error occurred! Error: {err}')
 
 
-_export_and_store_pages()
+get_and_store_all_page_infos_in_file()
+export_and_store_pages()

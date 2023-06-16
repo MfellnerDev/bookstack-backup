@@ -89,7 +89,7 @@ def _check_slug(slug: str):
     return slug
 
 
-def _get_and_store_all_page_infos_in_file():
+def get_and_store_all_page_infos_in_file():
     """
     Combine all elements and store the information about all pages
     :return:
@@ -100,10 +100,10 @@ def _get_and_store_all_page_infos_in_file():
     if page_dict is None:
         raise ValueError("The page information is None!")
 
-    print("All pages were fetched from the API!")
+    print("Finished fetching all pages from the API!")
 
     # Get the total amount of pages and inform the user
-    print(f"A total amount of {page_dict.pop('total', {})} will be added to the file.")
+    print(f"A total amount of {page_dict.pop('total', {})} pages will be added to the file.")
 
     _create_new_file(INFO_FILE)
 
@@ -115,6 +115,3 @@ def _get_and_store_all_page_infos_in_file():
             # store ID and SLUG of the page in the format "id:slug"\n in the INFO textfile
             content = f"{page_id}:{page_slug}:{page_parent_book}"
             _append_str_to_file(INFO_FILE, content)
-
-
-_get_and_store_all_page_infos_in_file()
