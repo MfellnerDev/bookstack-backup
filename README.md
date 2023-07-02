@@ -3,7 +3,7 @@
 ### Supported Operating Systems:
 
   - Windows
-  - Linux (not tested yet)
+  - Linux (tested on Debian 11)
 
 ### 1. Why?
 This is a script that I wrote because I was just feeling unwell with all of my important notes being on exactly one server and managed by one application.
